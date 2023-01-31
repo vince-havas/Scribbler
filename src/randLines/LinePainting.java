@@ -2,10 +2,12 @@ package randLines;
 
 import java.util.ArrayList;
 
+import accessories.PaintStrokes;
+import accessories.Painting;
 import accessories.Section;
 import illustration.Page;
 
-public abstract class LinePainting {
+public abstract class LinePainting implements Painting {
 	public ArrayList<Section> _lines = new ArrayList<Section>();
 
 	public abstract void generateLines();
@@ -16,8 +18,11 @@ public abstract class LinePainting {
 			System.out.println("section " + ii++ + ": " + s.toString());
 	}
 
-	public ArrayList<Section> getLines() {
-		return _lines;
+	public ArrayList<PaintStrokes> getPaintStrokes() {
+		ArrayList<PaintStrokes> out = new ArrayList<PaintStrokes>();
+		for (Section l : _lines)
+			out.add(l);
+		return out;
 	}
 
 	public boolean wellLocatedExcept(Section attempt_, ArrayList<Section> excludedIndices_) {

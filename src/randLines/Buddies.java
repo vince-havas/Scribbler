@@ -21,7 +21,7 @@ public class Buddies extends LinePainting {
 		while (_lines.size() < 1500) {
 			int randInd = getDrawnPoint(start);
 			end = new Point2D.Double(Page.getRandomX(), Page.getRandomY());
-			Section attempt = new Section(start, (ng.nextUnitBinomial(3) * 2 + 0.5) * Math.PI, ng.nextUnit() * 500);
+			Section attempt = new Section(start, (ng.nextUnitIrwinHall(3) * 2 + 0.5) * Math.PI, ng.nextUnit() * 500);
 			if (wellLocatedExcept(attempt, new ArrayList<>(_lines.subList(randInd, randInd + 1))))
 				_lines.add(attempt);
 		}

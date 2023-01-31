@@ -3,7 +3,7 @@ package accessories;
 public class PRNG {
 	// pseudo random number generator
 	public enum Distribution {
-		UNIFORM, BINOMIAL, POWER, KUMARASWAMY
+		UNIFORM, IRWIN_HALL, POWER, KUMARASWAMY
 	}
 
 	private long _seed = 2087362089;
@@ -32,7 +32,7 @@ public class PRNG {
 	}
 
 	public int nextBelow(int upperLimit_) {
-		// random number between zero and upper limit
+		// random number between zero and upper limit - 1
 		return (int) (hash() % upperLimit_);
 	}
 
@@ -49,7 +49,11 @@ public class PRNG {
 		return Math.pow(nextUnit(), power);
 	}
 
-	public double nextUnitBinomial(int order_) {
+	public double nextIrwinHall() {
+		return nextUnitIrwinHall(12) - 6;
+	}
+
+	public double nextUnitIrwinHall(int order_) {
 		double out = 0;
 		for (int ii = 0; ii < order_; ii++)
 			out += nextUnit();
@@ -72,8 +76,8 @@ public class PRNG {
 	public double nextInRange(Distribution d_, double min_, double max_) {
 		double out = 0;
 		switch (d_) {
-		case BINOMIAL:
-			out = nextUnitBinomial(2);
+		case IRWIN_HALL:
+			out = nextUnitIrwinHall(5);
 			break;
 		case POWER:
 			out = nextUnitSquare();
@@ -104,17 +108,30 @@ public class PRNG {
 
 	public int nextLCG() {
 		// Linear congruential generator
-		// returns an int in [0, 255] for RGB illustration
-		// good parameters
+		// returns an integer in [0, 255] for RGB illustration
+		// good parameter set
 		final long modulus = 922337198929L;
 		final long multiplier = 9237204283L;
 		final long increment = 9237204469L;
 
-		// weak parameters
+		// weak parameter set
 //		final long modulus = 515231;
 //		final long multiplier = 9202;
 //		final long increment = 9231;
 		_seed = (_seed * multiplier + increment) % modulus;
 		return (int) (((double) Math.abs(_seed) / modulus) * 255);
+	}
+
+	public double nextNormal(double mean_, double variance_) {
+		return nextStandardNormal() * Math.sqrt(variance_) + mean_;
+	}
+
+	public double nextStandardNormal() {
+		// pseudo random numbers with normal distribution with Box–Muller method
+		return Math.sqrt(-2 * Math.log(nextUnit())) * Math.cos(2 * Math.PI * nextUnit());
+	}
+
+	public static void stepSeed() {
+		getInstance()._seed++;
 	}
 }

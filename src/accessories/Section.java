@@ -3,7 +3,7 @@ package accessories;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-public class Section {
+public class Section implements PaintStrokes {
 	private Point2D _start;
 	private Point2D _end;
 
