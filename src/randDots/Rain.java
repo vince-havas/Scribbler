@@ -66,7 +66,7 @@ public class Rain extends DotDrawing {
 
 	public Droplet generateBigDroplet(Point2D pos_) {
 		int halfSize = (int) (Page._width * Page._pageRatio / 2 - 2 * Page._margin);
-		Droplet out = new BigDroplet(pos_, halfSize / 6);
+		Droplet out = new BigDroplet(pos_, halfSize / 15);
 
 		return out;
 	}
@@ -92,7 +92,8 @@ public class Rain extends DotDrawing {
 				switch (_type) {
 				case CENTRAL:
 				case PAIR:
-					rgb = 255 * ring / _nRings - 50;
+					rgb = Math.max(0, 255 * ring / _nRings - 50);
+//					rgb = 0;
 					break;
 				case DRIZZLE:
 					final double order = 10;
@@ -104,15 +105,18 @@ public class Rain extends DotDrawing {
 				}
 
 				for (double angle = 0; angle < Math.PI * 2; angle += Math.PI / _angleFreq) {
-					int uncertainR = (int) ((_firstRingRadius + ring * _radiusStep)
-							* (1 + _uncertainty * ng.nextStandardNormal()));
+					double uncertainR = (_firstRingRadius + ring * _radiusStep);
+					uncertainR *= (1 + uncertainR * _uncertainty * ng.nextStandardNormal() / 1000);
 					double uncertainAngle = angle * (1 + _uncertainty * ng.nextStandardNormal());
 					Point2D p = new Point2D.Double(uncertainR * Math.cos(uncertainAngle) + _center.getX(),
 							uncertainR * Math.sin(uncertainAngle) + _center.getY());
 
-					int rgb_temp = (int) (rgb + ng.nextNormal(0, 30));
-					rgb_temp = Math.min(255, Math.max(0, rgb_temp));
-					if (rgb_temp < 250)
+					int rgb_temp;
+					do {
+						rgb_temp = (int) (rgb + ng.nextNormal(0, 5));
+					} while (rgb_temp < 0 || rgb_temp > 250);
+
+					if (Page.inMargin(p))
 						_dots.add(new ColouredDots(new int[] { rgb_temp, rgb_temp, rgb_temp }, p));
 				}
 			}
@@ -122,7 +126,7 @@ public class Rain extends DotDrawing {
 	class BigDroplet extends Droplet {
 		public BigDroplet(Point2D pos_, double step_) {
 			_center = (Point2D) pos_.clone();
-			_nRings = 6;
+			_nRings = 20;
 			_radiusStep = step_;
 			_angleFreq = 1400;
 			_firstRingRadius = 5;

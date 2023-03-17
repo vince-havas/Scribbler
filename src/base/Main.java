@@ -9,6 +9,7 @@ import randLines.Buddies;
 import randLines.Caterpillars;
 import randLines.Krixkrax;
 import randLines.LinePainting;
+import randLines.Tunel;
 
 public class Main {
 
@@ -22,13 +23,19 @@ public class Main {
 
 		cp = new Krixkrax();
 		cp.generateLines();
-//		cp.print();
 		Page.saveDrawing(cp, "test_krixkrax");
 
 		cp = new Caterpillars(PRNG.Distribution.UNIFORM);
 		cp.generateLines();
-//		cp.print();
 		Page.saveDrawing(cp, "test_caterpillars");
+
+		cp = new Tunel(false);
+		cp.generateLines();
+		Page.saveDrawing(cp, "test_tunel_hypnotic");
+
+		cp = new Tunel(true);
+		cp.generateLines();
+		Page.saveDrawing(cp, "test_tunel_periodic");
 
 		PRNG.stepSeed();
 		DotDrawing dd = new Rain(Rain.RainType.DRIZZLE);

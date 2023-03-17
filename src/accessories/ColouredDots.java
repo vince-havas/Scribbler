@@ -17,6 +17,11 @@ public class ColouredDots implements PaintStrokes {
 		_position = (Point2D) pos_.clone();
 	}
 
+	static public Point2D shiftPoint(Point2D base_, Point2D diff_) {
+		Point2D out = new Point2D.Double(base_.getX() + diff_.getX(), base_.getY() + diff_.getY());
+		return out;
+	}
+
 	public Point2D get_position() {
 		return _position;
 	}

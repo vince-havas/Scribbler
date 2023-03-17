@@ -21,6 +21,11 @@ public class Section implements PaintStrokes {
 				start_.getY() + length_ * Math.sin(angle_));
 	}
 
+	public void shift(Point2D p_) {
+		this.set_start(new Point2D.Double(this.get_start().getX() + p_.getX(), this.get_start().getY() + p_.getY()));
+		this.set_end(new Point2D.Double(this.get_end().getX() + p_.getX(), this.get_end().getY() + p_.getY()));
+	}
+
 	public boolean inRange(double width_, double height_) {
 		return this.inRange(0, 0, width_, height_);
 	}
@@ -84,7 +89,15 @@ public class Section implements PaintStrokes {
 		return _start;
 	}
 
+	public void set_start(Point2D _start) {
+		this._start = (Point2D) _start.clone();
+	}
+
 	public Point2D get_end() {
 		return _end;
+	}
+
+	public void set_end(Point2D _end) {
+		this._end = (Point2D) _end.clone();
 	}
 }

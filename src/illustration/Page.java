@@ -21,7 +21,7 @@ import randLines.LinePainting;
 
 public class Page {
 	static public double _pageRatio = 1.414;
-	static public int _width = 2100, _margin = 50;
+	static public int _width = 2100, _margin = 100;
 	static private final PRNG _ng = PRNG.getInstance();
 	static private final Path _outputPath = Paths.get(".").toAbsolutePath().getParent().resolve("output");
 
@@ -37,7 +37,7 @@ public class Page {
 		g2.setPaint(Color.black);
 		g2.setStroke(new BasicStroke(4));
 
-		final int size = 5;
+		final int size = 6;
 
 		if (painting_ instanceof LinePainting) {
 			for (PaintStrokes line : painting_.getPaintStrokes())
@@ -88,6 +88,11 @@ public class Page {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static boolean inMargin(Point2D p) {
+		return p.getX() > _margin && p.getX() < _width - _margin && p.getY() > _margin
+				&& p.getY() < _width * _pageRatio - _margin;
 	}
 
 	static public Point2D getCenter() {

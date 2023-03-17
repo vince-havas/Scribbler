@@ -1,7 +1,6 @@
 /bin
 /.metadata
 /output/test*
+/output/nyomtatni
 /output/*hidden*
-/.classpath
-/.project
-/.project
+*kuka*
