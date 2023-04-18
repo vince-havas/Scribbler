@@ -2,6 +2,8 @@ package base;
 
 import accessories.PRNG;
 import illustration.Page;
+import randCurves.Crossroads;
+import randCurves.CurveGraphic;
 import randDots.DotDrawing;
 import randDots.Rain;
 import randDots.Salty;
@@ -17,24 +19,19 @@ public class Main {
 		Page.hangyafoci("test_hangyafoci");
 
 		LinePainting cp = new Buddies();
-		cp.generateLines();
 //		cp.print();
 		Page.saveDrawing(cp, "test_buddies");
 
 		cp = new Krixkrax();
-		cp.generateLines();
 		Page.saveDrawing(cp, "test_krixkrax");
 
 		cp = new Caterpillars(PRNG.Distribution.UNIFORM);
-		cp.generateLines();
 		Page.saveDrawing(cp, "test_caterpillars");
 
 		cp = new Tunel(false);
-		cp.generateLines();
 		Page.saveDrawing(cp, "test_tunel_hypnotic");
 
 		cp = new Tunel(true);
-		cp.generateLines();
 		Page.saveDrawing(cp, "test_tunel_periodic");
 
 		PRNG.stepSeed();
@@ -49,6 +46,9 @@ public class Main {
 
 		dd = new Salty(PRNG.Distribution.IRWIN_HALL, PRNG.Distribution.POWER, DotDrawing.FadingType.WAVE);
 		Page.saveDrawing(dd, "test_salty");
+		
+		CurveGraphic cg = new Crossroads();
+		Page.saveDrawing(cg, "test_crossroads");
 
 		System.out.println("\nDone");
 	}

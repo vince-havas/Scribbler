@@ -11,6 +11,10 @@ public class Buddies extends LinePainting {
 	// generates lines that start from a previous line, but don't cross each other
 	// otherwise
 
+	public Buddies() {
+		generateLines();
+	}
+
 	@Override
 	public void generateLines() {
 		Point2D start = new Point2D.Double(900, 2800);
@@ -31,8 +35,8 @@ public class Buddies extends LinePainting {
 		PRNG ng = PRNG.getInstance();
 		int baseIndex = ng.nextBelow(_lines.size());
 		final Section randSec = _lines.get(baseIndex);
-		double param = randSec.get_start().getX()
-				+ ng.nextUnit() * (randSec.get_end().getX() - randSec.get_start().getX());
+		double param = randSec.getStart().getX()
+				+ ng.nextUnit() * (randSec.getEnd().getX() - randSec.getStart().getX());
 		start_.setLocation(param, randSec.getValueAt(param));
 
 		return baseIndex;

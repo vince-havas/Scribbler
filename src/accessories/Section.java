@@ -3,6 +3,9 @@ package accessories;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
+import illustration.Page;
+import illustration.Page.Hull;
+
 public class Section implements PaintStrokes {
 	private Point2D _start;
 	private Point2D _end;
@@ -22,8 +25,8 @@ public class Section implements PaintStrokes {
 	}
 
 	public void shift(Point2D p_) {
-		this.set_start(new Point2D.Double(this.get_start().getX() + p_.getX(), this.get_start().getY() + p_.getY()));
-		this.set_end(new Point2D.Double(this.get_end().getX() + p_.getX(), this.get_end().getY() + p_.getY()));
+		this.setStart(new Point2D.Double(this.getStart().getX() + p_.getX(), this.getStart().getY() + p_.getY()));
+		this.setEnd(new Point2D.Double(this.getEnd().getX() + p_.getX(), this.getEnd().getY() + p_.getY()));
 	}
 
 	public boolean inRange(double width_, double height_) {
@@ -37,6 +40,10 @@ public class Section implements PaintStrokes {
 			return false;
 		else
 			return true;
+	}
+
+	public boolean inRange() {
+		return Page.inMargin(_start) && Page.inMargin(_end);
 	}
 
 	public double getLenght() {
@@ -85,19 +92,24 @@ public class Section implements PaintStrokes {
 		return new Line2D.Double(_start.getX(), _start.getY(), _end.getX(), _end.getY());
 	}
 
-	public Point2D get_start() {
+	public Point2D getStart() {
 		return _start;
 	}
 
-	public void set_start(Point2D _start) {
+	public void setStart(Point2D _start) {
 		this._start = (Point2D) _start.clone();
 	}
 
-	public Point2D get_end() {
+	public Point2D getEnd() {
 		return _end;
 	}
 
-	public void set_end(Point2D _end) {
+	public void setEnd(Point2D _end) {
 		this._end = (Point2D) _end.clone();
+	}
+
+	@Override
+	public Hull getHull() {
+		return new Hull(_start, _end);
 	}
 }

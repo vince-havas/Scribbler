@@ -17,6 +17,7 @@ public class Tunel extends LinePainting {
 
 	public Tunel(boolean periodicRadius_) {
 		_isHypnotic = periodicRadius_;
+		generateLines();
 	}
 
 	@Override
@@ -79,6 +80,6 @@ public class Tunel extends LinePainting {
 			x = 200;
 			y = -400;
 		}
-		return new Point2D.Double(x + Page.getCenter().getX(), y + Page.getCenter().getY());
+		return new Point2D.Double(x + Page.getCentre().getX(), y + Page.getCentre().getY());
 	}
 }

@@ -3,11 +3,9 @@ package randLines;
 import java.util.ArrayList;
 
 import accessories.PaintStrokes;
-import accessories.Painting;
 import accessories.Section;
-import illustration.Page;
 
-public abstract class LinePainting implements Painting {
+public abstract class LinePainting {
 	public ArrayList<Section> _lines = new ArrayList<Section>();
 
 	public abstract void generateLines();
@@ -28,8 +26,7 @@ public abstract class LinePainting implements Painting {
 	public boolean wellLocatedExcept(Section attempt_, ArrayList<Section> excludedIndices_) {
 		// checks if the section is within the boundaries and not crossing the previous
 		// lines not listed in excludedIndices_
-		if (!attempt_.inRange(Page._margin, Page._margin, Page._width - Page._margin,
-				Page._pageRatio * Page._width - Page._margin))
+		if(!attempt_.inRange())
 			return false;
 
 		for (Section old : _lines)

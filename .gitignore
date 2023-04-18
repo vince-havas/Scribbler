@@ -1,5 +1,6 @@
 /bin
 /.metadata
+/output/temp
 /output/test*
 /output/nyomtatni
 /output/*hidden*

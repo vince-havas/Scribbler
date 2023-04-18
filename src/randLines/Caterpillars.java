@@ -20,6 +20,7 @@ public class Caterpillars extends LinePainting {
 
 	public Caterpillars(PRNG.Distribution distribution_) {
 		this(distribution_, distribution_);
+		generateLines();
 	}
 
 	public Caterpillars(PRNG.Distribution distributionX_, PRNG.Distribution distributionY_) {

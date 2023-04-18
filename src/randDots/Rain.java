@@ -56,7 +56,7 @@ public class Rain extends DotDrawing {
 	}
 
 	public Droplet generateCentralDroplet() {
-		return generateBigDroplet(Page.getCenter());
+		return generateBigDroplet(Page.getCentre());
 	}
 
 	public Droplet generateBigDroplet() {

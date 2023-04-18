@@ -36,14 +36,14 @@ public class Salty extends DotDrawing {
 
 		switch (_fading) {
 		case CONCENTRIC:
-			weight = Page.getCenter().distance(coordX, coordY) / (Page._width * Page._pageRatio / 2 - Page._margin);
+			weight = Page.getCentre().distance(coordX, coordY) / (Page._width * Page._pageRatio / 2 - Page._margin);
 			break;
 		case CORNER:
 			weight = rootSquareSum(coordX, coordY) / rootSquareSum(Page.getMaxX(), Page.getMaxX());
 			break;
 		case WAVE:
 			// ratio of radii
-			weight = Page.getCenter().distance(coordX, coordY) / (Page._width * Page._pageRatio / 2 - Page._margin);
+			weight = Page.getCentre().distance(coordX, coordY) / (Page._width * Page._pageRatio / 2 - Page._margin);
 			final double order = 10;
 			weight = 1 - Math.exp(-(order * weight - order / 2) * (order * weight - order / 2));
 			break;

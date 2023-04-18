@@ -8,6 +8,10 @@ import illustration.Page;
 public class Krixkrax extends LinePainting {
 	// generates straight lines that don't intersect each other
 
+	public Krixkrax() {
+		generateLines();
+	}
+
 	@Override
 	public void generateLines() {
 		while (_lines.size() < 1000) {

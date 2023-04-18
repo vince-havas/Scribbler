@@ -8,14 +8,16 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
 import accessories.ColouredDots;
+import accessories.CurvedLine;
 import accessories.PRNG;
 import accessories.PaintStrokes;
-import accessories.Painting;
 import accessories.Section;
+import randCurves.CurveGraphic;
 import randDots.DotDrawing;
 import randLines.LinePainting;
 
@@ -23,9 +25,9 @@ public class Page {
 	static public double _pageRatio = 1.414;
 	static public int _width = 2100, _margin = 100;
 	static private final PRNG _ng = PRNG.getInstance();
-	static private final Path _outputPath = Paths.get(".").toAbsolutePath().getParent().resolve("output");
+	static private final Path _outputPath = Paths.get(".").toAbsolutePath().getParent().resolve("output/temp");
 
-	static public void saveDrawing(Painting painting_, String name_) {
+	public static <T> void saveDrawing(T painting_, String name_) {
 		int height = (int) (_width * _pageRatio);
 
 		BufferedImage bi = new BufferedImage(_width, height, BufferedImage.TYPE_INT_ARGB);
@@ -40,16 +42,24 @@ public class Page {
 		final int size = 6;
 
 		if (painting_ instanceof LinePainting) {
-			for (PaintStrokes line : painting_.getPaintStrokes())
+			LinePainting lp = (LinePainting) painting_;
+			for (PaintStrokes line : lp.getPaintStrokes())
 				g2.draw(((Section) line).toLine());
 
 		} else if (painting_ instanceof DotDrawing) {
-			for (PaintStrokes dot : painting_.getPaintStrokes()) {
+			DotDrawing dd = (DotDrawing) painting_;
+			for (PaintStrokes dot : dd.getPaintStrokes()) {
 				ColouredDots cd = (ColouredDots) dot;
-				int[] rgb = cd.get_RGB();
-				Point2D pos = cd.get_position();
+				int[] rgb = cd.getRGB();
+				Point2D pos = cd.getPosition();
 				g2.setColor(new Color(rgb[0], rgb[1], rgb[2]));
 				g2.fillRect((int) pos.getX(), (int) pos.getY(), size, size);
+			}
+		} else if (painting_ instanceof CurveGraphic) {
+			CurveGraphic cg = (CurveGraphic) painting_;
+			for (PaintStrokes ps : cg.getPaintStrokes()) {
+				CurvedLine cl = (CurvedLine) ps;
+				g2.draw(cl.drawMe());
 			}
 		}
 
@@ -95,7 +105,16 @@ public class Page {
 				&& p.getY() < _width * _pageRatio - _margin;
 	}
 
-	static public Point2D getCenter() {
+	public static boolean inMargin(Hull husk_) {
+		return husk_.getTop() > _margin && husk_.getLeft() > _margin
+				&& husk_.getBottom() < _width * _pageRatio - _margin && husk_.getRight() < _width - _margin;
+	}
+
+	public static <T extends PaintStrokes> boolean inMargin(T curve) {
+		return inMargin(curve.getHull());
+	}
+
+	static public Point2D getCentre() {
 		return new Point2D.Double(_width / 2, _width * _pageRatio / 2);
 	}
 
@@ -121,5 +140,86 @@ public class Page {
 
 	static public double getRandomY(PRNG.Distribution dist_) {
 		return _ng.nextInRange(dist_, _margin, getMaxY());
+	}
+
+	static public Point2D getRandomPoint() {
+		return getRandomPoint(PRNG.Distribution.UNIFORM, PRNG.Distribution.UNIFORM);
+	}
+
+	static public Point2D getRandomPoint(PRNG.Distribution distX_, PRNG.Distribution distY_) {
+		return new Point2D.Double(getRandomX(distX_), getRandomY(distY_));
+	}
+
+	public static class Hull {
+		private enum Side {
+			TOP, LEFT, BOTTOM, RIGHT;
+		}
+
+		private HashMap<Side, Double> _hull;
+
+		public Hull() {
+			_hull = new HashMap<Side, Double>();
+		}
+
+		public Hull(double top_, double left_, double bottom_, double right_) {
+			this();
+			this.setTop(top_);
+			this.setLeft(left_);
+			this.setBottom(bottom_);
+			this.setRight(right_);
+			sortHusk();
+		}
+
+		public Hull(Point2D p1_, Point2D p2_) {
+			this.setTop(Math.min(p1_.getY(), p2_.getY())); // vertical axis is turned around in printing
+			this.setLeft(Math.min(p1_.getX(), p2_.getX()));
+			this.setBottom(Math.max(p1_.getY(), p2_.getY()));
+			this.setRight(Math.max(p1_.getX(), p2_.getX()));
+		}
+
+		public void sortHusk() {
+			if (getTop() > getBottom()) { // vertical axis is turned around in printing
+				double temp = getBottom();
+				setBottom(getTop());
+				setTop(temp);
+			}
+			if (getLeft() > getRight()) {
+				double temp = getLeft();
+				setLeft(getRight());
+				setRight(temp);
+			}
+		}
+
+		public double getTop() {
+			return _hull.get(Side.TOP);
+		}
+
+		public void setTop(double limes_) {
+			_hull.put(Side.TOP, limes_);
+		}
+
+		public double getLeft() {
+			return _hull.get(Side.LEFT);
+		}
+
+		public void setLeft(double limes_) {
+			_hull.put(Side.LEFT, limes_);
+		}
+
+		public double getBottom() {
+			return _hull.get(Side.BOTTOM);
+		}
+
+		public void setBottom(double limes_) {
+			_hull.put(Side.BOTTOM, limes_);
+		}
+
+		public double getRight() {
+			return _hull.get(Side.RIGHT);
+		}
+
+		public void setRight(double limes_) {
+			_hull.put(Side.RIGHT, limes_);
+		}
 	}
 }

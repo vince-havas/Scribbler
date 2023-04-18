@@ -4,9 +4,8 @@ import java.util.ArrayList;
 
 import accessories.ColouredDots;
 import accessories.PaintStrokes;
-import accessories.Painting;
 
-public abstract class DotDrawing implements Painting {
+public abstract class DotDrawing {
 	public enum FadingType {
 		CONCENTRIC, CORNER, WAVE
 	}

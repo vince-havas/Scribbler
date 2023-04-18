@@ -1,5 +1,7 @@
 package accessories;
 
+import illustration.Page;
+
 public interface PaintStrokes {
-	//TODO
+	public Page.Hull getHull();
 }
