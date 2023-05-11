@@ -1,6 +1,7 @@
 package base;
 
 import accessories.PRNG;
+import illustration.Arranger;
 import illustration.Page;
 import randCurves.Crossroads;
 import randCurves.CurveGraphic;
@@ -16,6 +17,7 @@ import randLines.Tunel;
 public class Main {
 
 	public static void main(String[] args) {
+
 		Page.hangyafoci("test_hangyafoci");
 
 		LinePainting cp = new Buddies();
@@ -46,9 +48,12 @@ public class Main {
 
 		dd = new Salty(PRNG.Distribution.IRWIN_HALL, PRNG.Distribution.POWER, DotDrawing.FadingType.WAVE);
 		Page.saveDrawing(dd, "test_salty");
-		
+
 		CurveGraphic cg = new Crossroads();
 		Page.saveDrawing(cg, "test_crossroads");
+
+		Arranger<Crossroads> arr = new Arranger<>(Crossroads::new);
+		Page.saveDrawing(arr, "test_arranger");
 
 		System.out.println("\nDone");
 	}

@@ -37,7 +37,7 @@ public class Tunel extends LinePainting {
 				edgeLength = Double.NaN;
 			}
 
-			final Point2D centre = getCentre();
+			final Point2D centre = getMiddle();
 			for (double angle = 0; angle < 2 * Math.PI - angleStep / 2; angle += angleStep) {
 				double shiftedAngle = angleShift + angle;
 				Section attempt = new Section(
@@ -55,7 +55,7 @@ public class Tunel extends LinePainting {
 		} while (enough);
 	}
 
-	private Point2D getCentre() {
+	private Point2D getMiddle() {
 		double x, y;
 
 		if (_isHypnotic) {

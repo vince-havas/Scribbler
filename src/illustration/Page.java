@@ -12,14 +12,8 @@ import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 
-import accessories.ColouredDots;
-import accessories.CurvedLine;
 import accessories.PRNG;
 import accessories.PaintStrokes;
-import accessories.Section;
-import randCurves.CurveGraphic;
-import randDots.DotDrawing;
-import randLines.LinePainting;
 
 public class Page {
 	static public double _pageRatio = 1.414;
@@ -27,7 +21,7 @@ public class Page {
 	static private final PRNG _ng = PRNG.getInstance();
 	static private final Path _outputPath = Paths.get(".").toAbsolutePath().getParent().resolve("output/temp");
 
-	public static <T> void saveDrawing(T painting_, String name_) {
+	public static void saveDrawing(Drawing painting_, String name_) {
 		int height = (int) (_width * _pageRatio);
 
 		BufferedImage bi = new BufferedImage(_width, height, BufferedImage.TYPE_INT_ARGB);
@@ -39,29 +33,7 @@ public class Page {
 		g2.setPaint(Color.black);
 		g2.setStroke(new BasicStroke(4));
 
-		final int size = 6;
-
-		if (painting_ instanceof LinePainting) {
-			LinePainting lp = (LinePainting) painting_;
-			for (PaintStrokes line : lp.getPaintStrokes())
-				g2.draw(((Section) line).toLine());
-
-		} else if (painting_ instanceof DotDrawing) {
-			DotDrawing dd = (DotDrawing) painting_;
-			for (PaintStrokes dot : dd.getPaintStrokes()) {
-				ColouredDots cd = (ColouredDots) dot;
-				int[] rgb = cd.getRGB();
-				Point2D pos = cd.getPosition();
-				g2.setColor(new Color(rgb[0], rgb[1], rgb[2]));
-				g2.fillRect((int) pos.getX(), (int) pos.getY(), size, size);
-			}
-		} else if (painting_ instanceof CurveGraphic) {
-			CurveGraphic cg = (CurveGraphic) painting_;
-			for (PaintStrokes ps : cg.getPaintStrokes()) {
-				CurvedLine cl = (CurvedLine) ps;
-				g2.draw(cl.drawMe());
-			}
-		}
+		painting_.drawMe(g2);
 
 		try {
 			ImageIO.write(bi, "PNG", _outputPath.resolve(name_ + ".PNG").toFile());
@@ -161,6 +133,14 @@ public class Page {
 			_hull = new HashMap<Side, Double>();
 		}
 
+		public Hull(Hull other_) {
+			this.setTop(other_.getTop());
+			this.setLeft(other_.getLeft());
+			this.setBottom(other_.getBottom());
+			this.setRight(other_.getRight());
+			sortHusk();
+		}
+
 		public Hull(double top_, double left_, double bottom_, double right_) {
 			this();
 			this.setTop(top_);
@@ -188,6 +168,17 @@ public class Page {
 				setLeft(getRight());
 				setRight(temp);
 			}
+		}
+
+		public void annex(Hull other_) {
+			if (this.getTop() > other_.getTop())
+				setTop(other_.getTop());
+			if (this.getLeft() > other_.getLeft())
+				setLeft(other_.getLeft());
+			if (this.getBottom() < other_.getBottom())
+				setBottom(other_.getBottom());
+			if (this.getRight() < other_.getRight())
+				setRight(other_.getRight());
 		}
 
 		public double getTop() {

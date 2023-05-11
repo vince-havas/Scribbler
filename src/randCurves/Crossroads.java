@@ -1,11 +1,18 @@
 package randCurves;
 
+import java.awt.geom.Point2D;
+
 import accessories.Ellipse;
 import accessories.PRNG;
 import illustration.Page;
 
 public class Crossroads extends CurveGraphic {
 	public Crossroads() {
+		this(Page.getCentre());
+	}
+
+	public Crossroads(Point2D centre_) {
+		super(centre_);
 		generateCurves();
 	}
 
