@@ -18,11 +18,10 @@ public abstract class LinePainting extends Drawing {
 			System.out.println("section " + ii++ + ": " + s.toString());
 	}
 
-	public ArrayList<PaintStrokes> getPaintStrokes() {
-		ArrayList<PaintStrokes> out = new ArrayList<PaintStrokes>();
-		for (Section l : _lines)
-			out.add(l);
-		return out;
+	protected void updateCurves() {
+		_curves = new ArrayList<PaintStrokes>();
+		for (Section d : _lines)
+			_curves.add(d);
 	}
 
 	public boolean wellLocatedExcept(Section attempt_, ArrayList<Section> excludedIndices_) {

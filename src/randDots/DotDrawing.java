@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import accessories.ColouredDots;
 import accessories.PaintStrokes;
@@ -11,7 +12,28 @@ import illustration.Drawing;
 
 public abstract class DotDrawing extends Drawing {
 	public enum FadingType {
-		CONCENTRIC, CORNER, WAVE
+		CONCENTRIC(0), CORNER(1), WAVE(2);
+
+		private int _index;
+		private static HashMap<Integer, FadingType> _map = new HashMap<>();
+
+		FadingType(final int index_) {
+			this._index = index_;
+		}
+
+		static {
+			for (FadingType ft : FadingType.values()) {
+				_map.put(ft._index, ft);
+			}
+		}
+
+		public static FadingType valueOf(int ft_) {
+			return (FadingType) _map.get(ft_);
+		}
+
+		public int getIndex() {
+			return _index;
+		}
 	}
 
 	final public double rootSquareSum(double a_, double b_) {
@@ -22,11 +44,10 @@ public abstract class DotDrawing extends Drawing {
 
 	public abstract void generateDots();
 
-	public ArrayList<PaintStrokes> getPaintStrokes() {
-		ArrayList<PaintStrokes> out = new ArrayList<PaintStrokes>();
+	protected void updateCurves() {
+		_curves = new ArrayList<PaintStrokes>();
 		for (ColouredDots d : _dots)
-			out.add(d);
-		return out;
+			_curves.add(d);
 	}
 
 	@Override

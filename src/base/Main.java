@@ -1,59 +1,67 @@
 package base;
 
 import accessories.PRNG;
+import accessories.PRNG.Distribution;
 import illustration.Arranger;
 import illustration.Page;
 import randCurves.Crossroads;
-import randCurves.CurveGraphic;
+import randCurves.NoisyCircles;
+import randCurves.PearlString;
 import randDots.DotDrawing;
 import randDots.Rain;
 import randDots.Salty;
 import randLines.Buddies;
 import randLines.Caterpillars;
+import randLines.FantomGrid;
 import randLines.Krixkrax;
 import randLines.LinePainting;
+import randLines.Spider;
 import randLines.Tunel;
+import tester.Tester;
 
 public class Main {
 
 	public static void main(String[] args) {
-
+//		PRNG.stepSeed();
+		/*-*/
 		Page.hangyafoci("test_hangyafoci");
 
-		LinePainting cp = new Buddies();
-//		cp.print();
-		Page.saveDrawing(cp, "test_buddies");
+		Page.saveDrawing(new Tunel(), "test_tunel");
 
-		cp = new Krixkrax();
-		Page.saveDrawing(cp, "test_krixkrax");
+		Page.saveDrawing(new Crossroads(), "test_crossroads");
 
-		cp = new Caterpillars(PRNG.Distribution.UNIFORM);
-		Page.saveDrawing(cp, "test_caterpillars");
+		Page.saveDrawing(new PearlString(), "test_pearls");
 
-		cp = new Tunel(false);
-		Page.saveDrawing(cp, "test_tunel_hypnotic");
+		Page.saveDrawing(new Krixkrax(), "test_krixkrax");
+		Arranger<Krixkrax> arr4 = new Arranger<>(Krixkrax::new);
+		Page.saveDrawing(arr4, "test_krixkrax_arr");
 
-		cp = new Tunel(true);
-		Page.saveDrawing(cp, "test_tunel_periodic");
+		Page.saveDrawing(new Caterpillars(Distribution.UNIFORM), "test_caterpillars_uniform");
+		LinePainting lp = new Caterpillars(Distribution.IRWIN_HALL, Distribution.KUMARASWAMY);
+		Page.saveDrawing(lp, "test_caterpillars_2");
+		Arranger<Caterpillars> arr5 = new Arranger<>(Caterpillars::new);
+		Page.saveDrawing(arr5, "test_caterpillars_arr");
 
-		PRNG.stepSeed();
-		DotDrawing dd = new Rain(Rain.RainType.DRIZZLE);
-		Page.saveDrawing(dd, "test_rain_all");
+		Arranger<Buddies> arr6 = new Arranger<>(Buddies::new);
+		Page.saveDrawing(arr6, "test_buddies_arr");
 
-		dd = new Rain(Rain.RainType.CENTRAL);
-		Page.saveDrawing(dd, "test_rain_single");
+		Page.saveDrawing(new Rain(Rain.RainType.DRIZZLE), "test_rain");
+		Page.saveDrawing(new Arranger<>(Rain::new), "test_rain_arr");
 
-		dd = new Rain(Rain.RainType.PAIR);
-		Page.saveDrawing(dd, "test_rain_pair");
-
-		dd = new Salty(PRNG.Distribution.IRWIN_HALL, PRNG.Distribution.POWER, DotDrawing.FadingType.WAVE);
+		DotDrawing dd = new Salty(PRNG.Distribution.UNIFORM, PRNG.Distribution.POWER, DotDrawing.FadingType.CORNER);
 		Page.saveDrawing(dd, "test_salty");
+		Page.saveDrawing(new Arranger<>(Salty::new), "test_salty_arr");
 
-		CurveGraphic cg = new Crossroads();
-		Page.saveDrawing(cg, "test_crossroads");
+		Page.saveDrawing(new Arranger<>(Spider::new), "test_spider");
 
-		Arranger<Crossroads> arr = new Arranger<>(Crossroads::new);
-		Page.saveDrawing(arr, "test_arranger");
+		Page.saveDrawing(new Arranger<>(FantomGrid::new), "test_fantomGrid");
+
+		Page.saveDrawing(new FantomGrid(), "test_fantomGrid2");
+
+		Page.saveDrawing(new Tester(), "test_tester");
+
+		Arranger<NoisyCircles> arr12 = new Arranger<>(NoisyCircles::new, Arranger.ArrangementType.PETRI_DISH, 151);
+		Page.saveDrawing(arr12, "test_noisyCircles");
 
 		System.out.println("\nDone");
 	}

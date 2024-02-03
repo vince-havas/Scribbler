@@ -16,7 +16,8 @@ public abstract class CurvedLine implements PaintStrokes {
 		GeneralPath gp = new GeneralPath();
 		gp.moveTo(point.getX(), point.getY());
 
-		for (; t < getLimit(); t += getLimit() / _nStep) {
+		double limit = getLimit();
+		for (; t < limit; t += limit / _nStep) {
 			point = getPoint(t);
 			gp.lineTo(point.getX(), point.getY());
 		}

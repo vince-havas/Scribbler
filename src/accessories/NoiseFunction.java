@@ -70,7 +70,7 @@ public class NoiseFunction {
 	}
 
 	public static class GridValue {
-		enum SmoothingMethod {
+		public enum SmoothingMethod {
 			LINEAR, POWER, TRIGONOMETRIC
 		}
 

@@ -14,24 +14,27 @@ import javax.imageio.ImageIO;
 
 import accessories.PRNG;
 import accessories.PaintStrokes;
+import illustration.Page.Hull.HullType;
 
 public class Page {
-	static public double _pageRatio = 1.414;
-	static public int _width = 2100, _margin = 100;
+	static private final double _pageRatio = 1.414;
+	static private final int _width = 2100, _margin = 100, _height;
 	static private final PRNG _ng = PRNG.getInstance();
 	static private final Path _outputPath = Paths.get(".").toAbsolutePath().getParent().resolve("output/temp");
 
-	public static void saveDrawing(Drawing painting_, String name_) {
-		int height = (int) (_width * _pageRatio);
+	static {
+		_height = (int) (_width * _pageRatio);
+	}
 
-		BufferedImage bi = new BufferedImage(_width, height, BufferedImage.TYPE_INT_ARGB);
+	public static void saveDrawing(Drawing painting_, String name_) {
+		BufferedImage bi = new BufferedImage(_width, _height, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D g2 = bi.createGraphics();
 
 		g2.setPaint(Color.white);
-		g2.fillRect(0, 0, _width, height);
+		g2.fillRect(0, 0, _width, _height);
 		g2.setPaint(Color.black);
-		g2.setStroke(new BasicStroke(4));
+		g2.setStroke(new BasicStroke(painting_.getStrokeWidth()));
 
 		painting_.drawMe(g2);
 
@@ -45,20 +48,19 @@ public class Page {
 
 	static public void hangyafoci(String name_) {
 		// colours every pixel with a random shade of grey
-		// if repeating patterns appear in the result the PRNG has small period
-		final int height = (int) (_width * _pageRatio);
+		// if repeating patterns appear in the result,
+		// the PRNG's period isn't long enough
 		final int size = 5;
 
-		BufferedImage bi = new BufferedImage(_width, height, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage bi = new BufferedImage(_width, _height, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2 = bi.createGraphics();
-		PRNG ng = PRNG.getInstance();
 
 		g2.setPaint(Color.white);
-		g2.fillRect(0, 0, _width, height);
+		g2.fillRect(0, 0, _width, _height);
 
 		for (int xx = _margin; xx < _width - _margin; xx += size) {
-			for (int yy = _margin; yy < height - _margin; yy += size) {
-				int colour = ng.nextLCG();
+			for (int yy = _margin; yy < _height - _margin; yy += size) {
+				int colour = _ng.nextLCG();
 				g2.setColor(new Color(colour, colour, colour));
 				g2.fillRect(xx, yy, size, size);
 			}
@@ -72,22 +74,56 @@ public class Page {
 		}
 	}
 
-	public static boolean inMargin(Point2D p) {
-		return p.getX() > _margin && p.getX() < _width - _margin && p.getY() > _margin
-				&& p.getY() < _width * _pageRatio - _margin;
+	public static boolean inMargin(Point2D p_) {
+		return p_.getX() > _margin && p_.getX() < _width - _margin && p_.getY() > _margin
+				&& p_.getY() < _height - _margin;
 	}
 
 	public static boolean inMargin(Hull husk_) {
-		return husk_.getTop() > _margin && husk_.getLeft() > _margin
-				&& husk_.getBottom() < _width * _pageRatio - _margin && husk_.getRight() < _width - _margin;
+		if (husk_._type == HullType.CIRCULAR) {
+			boolean out = husk_.getCentreX() - husk_.getRadius() > _margin;
+			out &= husk_.getCentreX() + husk_.getRadius() < _width - _margin;
+			out &= husk_.getCentreY() - husk_.getRadius() > _margin;
+			out &= husk_.getCentreY() + husk_.getRadius() < _height - _margin;
+			return out;
+		} else
+			return husk_.getTop() > _margin && husk_.getLeft() > _margin && husk_.getBottom() < _height - _margin
+					&& husk_.getRight() < _width - _margin;
+	}
+
+	public static boolean inPetriDish(Hull husk_) {
+		if (husk_._type != HullType.CIRCULAR)
+			throw new Error("Only circular objects are investigated in Petri dishes");
+
+		double dx = husk_.getCentreX() - getCentre().getX();
+		double dy = husk_.getCentreY() - getCentre().getY();
+		double rad = Math.sqrt(dx * dx + dy * dy) + husk_.getRadius();
+
+		return rad < _width / 2.0 - _margin;
 	}
 
 	public static <T extends PaintStrokes> boolean inMargin(T curve) {
 		return inMargin(curve.getHull());
 	}
 
+	public static int getWidth() {
+		return _width;
+	}
+
+	public static int getHeight() {
+		return _height;
+	}
+
+	public static double getPageRatio() {
+		return _pageRatio;
+	}
+
+	public static int getMargin() {
+		return _margin;
+	}
+
 	static public Point2D getCentre() {
-		return new Point2D.Double(_width / 2, _width * _pageRatio / 2);
+		return new Point2D.Double(_width / 2, _height / 2);
 	}
 
 	static public int getMaxX() {
@@ -95,7 +131,7 @@ public class Page {
 	}
 
 	static public int getMaxY() {
-		return (int) (_width * _pageRatio - _margin);
+		return _height - _margin;
 	}
 
 	static public double getRandomX() {
@@ -124,93 +160,182 @@ public class Page {
 
 	public static class Hull {
 		private enum Side {
-			TOP, LEFT, BOTTOM, RIGHT;
+			TOP, LEFT, BOTTOM, RIGHT, CENTRE_X, CENTRE_Y, RADIUS;
 		}
 
-		private HashMap<Side, Double> _hull;
+		public enum HullType {
+			RECTANGULAR, CIRCULAR;
+		}
+
+		private HashMap<Side, Integer> _hull;
+		private HullType _type;
 
 		public Hull() {
-			_hull = new HashMap<Side, Double>();
+			_type = HullType.RECTANGULAR;
+			_hull = new HashMap<Side, Integer>();
+			for (Side s : Side.values())
+				_hull.put(s, null);
 		}
 
 		public Hull(Hull other_) {
-			this.setTop(other_.getTop());
-			this.setLeft(other_.getLeft());
-			this.setBottom(other_.getBottom());
-			this.setRight(other_.getRight());
+			this();
+			_type = other_.getType();
+			for (Side s : Side.values())
+				_hull.put(s, other_._hull.get(s));
+
 			sortHusk();
 		}
 
-		public Hull(double top_, double left_, double bottom_, double right_) {
+		public Hull(int top_, int left_, int bottom_, int right_) {
 			this();
-			this.setTop(top_);
-			this.setLeft(left_);
-			this.setBottom(bottom_);
-			this.setRight(right_);
+			_type = HullType.RECTANGULAR;
+			setTop(top_);
+			setLeft(left_);
+			setBottom(bottom_);
+			setRight(right_);
 			sortHusk();
 		}
 
 		public Hull(Point2D p1_, Point2D p2_) {
-			this.setTop(Math.min(p1_.getY(), p2_.getY())); // vertical axis is turned around in printing
-			this.setLeft(Math.min(p1_.getX(), p2_.getX()));
-			this.setBottom(Math.max(p1_.getY(), p2_.getY()));
-			this.setRight(Math.max(p1_.getX(), p2_.getX()));
+			this();
+			_type = HullType.RECTANGULAR;
+			setTop((int) Math.min(p1_.getY(), p2_.getY())); // vertical axis is turned over in printing
+			setLeft((int) Math.min(p1_.getX(), p2_.getX()));
+			setBottom((int) Math.max(p1_.getY(), p2_.getY()));
+			setRight((int) Math.max(p1_.getX(), p2_.getX()));
 		}
 
 		public void sortHusk() {
-			if (getTop() > getBottom()) { // vertical axis is turned around in printing
-				double temp = getBottom();
-				setBottom(getTop());
-				setTop(temp);
+			if (_type == HullType.RECTANGULAR) {
+				if (getTop() > getBottom()) { // vertical axis is turned over in printing
+					int temp = getBottom();
+					setBottom(getTop());
+					setTop(temp);
+				}
+				if (getLeft() > getRight()) {
+					int temp = getLeft();
+					setLeft(getRight());
+					setRight(temp);
+				}
 			}
-			if (getLeft() > getRight()) {
-				double temp = getLeft();
-				setLeft(getRight());
-				setRight(temp);
+		}
+
+		public boolean touches(Hull other_) {
+			if (_type == HullType.CIRCULAR && other_._type == HullType.CIRCULAR) {
+				final double dx = getCentreX() - other_.getCentreX();
+				final double dy = getCentreY() - other_.getCentreY();
+				final double r = getRadius() + other_.getRadius();
+				return dx * dx + dy * dy < r * r;
 			}
+
+			throw new Error("To be implemented");
 		}
 
 		public void annex(Hull other_) {
-			if (this.getTop() > other_.getTop())
-				setTop(other_.getTop());
-			if (this.getLeft() > other_.getLeft())
-				setLeft(other_.getLeft());
-			if (this.getBottom() < other_.getBottom())
-				setBottom(other_.getBottom());
-			if (this.getRight() < other_.getRight())
-				setRight(other_.getRight());
+			if (_type == HullType.RECTANGULAR && other_._type == HullType.RECTANGULAR) {
+				if (getTop() > other_.getTop())
+					setTop(other_.getTop());
+				if (getLeft() > other_.getLeft())
+					setLeft(other_.getLeft());
+				if (getBottom() < other_.getBottom())
+					setBottom(other_.getBottom());
+				if (getRight() < other_.getRight())
+					setRight(other_.getRight());
+			} else if (_type != other_._type) {
+				throw new Error("to be implemented");
+			} else {
+
+				int dx = other_.getCentreX() - getCentreX();
+				int dy = other_.getCentreY() - getCentreY();
+				int centerDist = (int) Math.sqrt(dx * dx + dy * dy);
+				if (centerDist * centerDist < 3) {
+					// curve type hulls have common center, just use the larger radius
+					setRadius(Math.max(getRadius(), other_.getRadius()));
+				} else {
+					// - the new center is in the middle of a section with length
+					// - radius1 + centerDistance + radius2
+					// - the new radius half of the above length
+					double ratio = (other_.getRadius() + centerDist - getRadius()) / 2.0 / centerDist;
+					setCentreX((int) (getCentreX() + ratio * dx));
+					setCentreY((int) (getCentreY() + ratio * dy));
+					setRadius((getRadius() + other_.getRadius() + centerDist) / 2);
+				}
+			}
 		}
 
-		public double getTop() {
-			return _hull.get(Side.TOP);
+		public void convertType(HullType newType_) {
+			if (_type == HullType.CIRCULAR) {
+				_type = HullType.RECTANGULAR;
+				throw new Error("to be implemented");
+			}
 		}
 
-		public void setTop(double limes_) {
+		public int getTop() {
+			return _type == HullType.RECTANGULAR ? _hull.get(Side.TOP)
+					: _hull.get(Side.CENTRE_Y) - _hull.get(Side.RADIUS);
+		}
+
+		public void setTop(int limes_) {
 			_hull.put(Side.TOP, limes_);
 		}
 
-		public double getLeft() {
-			return _hull.get(Side.LEFT);
+		public int getLeft() {
+			return _type == HullType.RECTANGULAR ? _hull.get(Side.LEFT)
+					: _hull.get(Side.CENTRE_X) - _hull.get(Side.RADIUS);
 		}
 
-		public void setLeft(double limes_) {
+		public void setLeft(int limes_) {
 			_hull.put(Side.LEFT, limes_);
 		}
 
-		public double getBottom() {
-			return _hull.get(Side.BOTTOM);
+		public int getBottom() {
+			return _type == HullType.RECTANGULAR ? _hull.get(Side.BOTTOM)
+					: _hull.get(Side.CENTRE_Y) + _hull.get(Side.RADIUS);
 		}
 
-		public void setBottom(double limes_) {
+		public void setBottom(int limes_) {
 			_hull.put(Side.BOTTOM, limes_);
 		}
 
-		public double getRight() {
-			return _hull.get(Side.RIGHT);
+		public int getRight() {
+			return _type == HullType.RECTANGULAR ? _hull.get(Side.RIGHT)
+					: _hull.get(Side.CENTRE_X) + _hull.get(Side.RADIUS);
 		}
 
-		public void setRight(double limes_) {
+		public void setRight(int limes_) {
 			_hull.put(Side.RIGHT, limes_);
+		}
+
+		public int getCentreX() {
+			return _hull.get(Side.CENTRE_X);
+		}
+
+		public void setCentreX(int x_) {
+			_hull.put(Side.CENTRE_X, x_);
+		}
+
+		public int getCentreY() {
+			return _hull.get(Side.CENTRE_Y);
+		}
+
+		public void setCentreY(int y_) {
+			_hull.put(Side.CENTRE_Y, y_);
+		}
+
+		public int getRadius() {
+			return _hull.get(Side.RADIUS);
+		}
+
+		public void setRadius(int rad_) {
+			_hull.put(Side.RADIUS, rad_);
+		}
+
+		public HullType getType() {
+			return _type;
+		}
+
+		public void setType(HullType type_) {
+			_type = type_;
 		}
 	}
 }

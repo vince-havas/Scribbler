@@ -1,7 +1,9 @@
 package randDots;
 
 import java.awt.geom.Point2D;
+import java.io.InvalidClassException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import accessories.ColouredDots;
 import accessories.PRNG;
@@ -11,16 +13,47 @@ public class Rain extends DotDrawing {
 	// generates sets of central rings of dots
 
 	public enum RainType {
-		CENTRAL, PAIR, DRIZZLE
+		CENTRAL(0), PAIR(1), DRIZZLE(2);
+
+		private int _index;
+		private static HashMap<Integer, RainType> _map = new HashMap<>();
+
+		RainType(final int index_) {
+			this._index = index_;
+		}
+
+		static {
+			for (RainType type : RainType.values()) {
+				_map.put(type._index, type);
+			}
+		}
+
+		public static RainType valueOf(int type_) {
+			return (RainType) _map.get(type_);
+		}
 	}
 
-	private ArrayList<Droplet> _dropps;
+	private ArrayList<Droplet> _dropps = new ArrayList<Droplet>();
 	public RainType _type;
+
+	public Rain() {
+		try {
+			setUp(getDefaultArgs());
+		} catch (InvalidClassException | IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public Rain(ArrayList<Integer> args_) {
+		try {
+			setUp(args_);
+		} catch (InvalidClassException | IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public Rain(RainType type_) {
 		_type = type_;
-		_dropps = new ArrayList<Droplet>();
-		regenerateDroplets();
 		generateDots();
 	}
 
@@ -38,14 +71,14 @@ public class Rain extends DotDrawing {
 			// only a few rings are visible
 			PRNG ng = PRNG.getInstance();
 			final int step = 200;
-			for (int ii = Page._margin; ii < Page.getMaxX(); ii += step)
-				for (int jj = Page._margin; jj < Page.getMaxY(); jj += step) {
+			for (int ii = Page.getMargin(); ii < Page.getMaxX(); ii += step)
+				for (int jj = Page.getMargin(); jj < Page.getMaxY(); jj += step) {
 					Point2D p = new Point2D.Double(ii + ng.nextBelow(step), jj + ng.nextBelow(step));
 					_dropps.add(new SmallDroplet(p));
 				}
 			break;
 		case PAIR:
-			// two drops "collide"
+			// two drops "interfere"
 			// rings are fading from centre towards the side
 			_dropps.add(generateBigDroplet());
 			_dropps.add(generateBigDroplet());
@@ -65,7 +98,7 @@ public class Rain extends DotDrawing {
 	}
 
 	public Droplet generateBigDroplet(Point2D pos_) {
-		int halfSize = (int) (Page._width * Page._pageRatio / 2 - 2 * Page._margin);
+		int halfSize = (int) (Page.getHeight() / 2 - 2 * Page.getMargin());
 		Droplet out = new BigDroplet(pos_, halfSize / 15);
 
 		return out;
@@ -73,6 +106,7 @@ public class Rain extends DotDrawing {
 
 	@Override
 	public void generateDots() {
+		regenerateDroplets();
 		for (Droplet drop : _dropps)
 			drop.generateDots();
 	}
@@ -93,7 +127,6 @@ public class Rain extends DotDrawing {
 				case CENTRAL:
 				case PAIR:
 					rgb = Math.max(0, 255 * ring / _nRings - 50);
-//					rgb = 0;
 					break;
 				case DRIZZLE:
 					final double order = 10;
@@ -144,5 +177,24 @@ public class Rain extends DotDrawing {
 			_angleFreq = 800;
 			_uncertainty = 0.03;
 		}
+	}
+
+	@Override
+	public ArrayList<Integer> getDefaultArgs() throws InvalidClassException {
+		ArrayList<Integer> defaultArgs = new ArrayList<>();
+		defaultArgs.add(0);
+
+		return defaultArgs;
+	}
+
+	@Override
+	public void setUp(ArrayList<Integer> args_) throws InvalidClassException, IllegalArgumentException {
+		if (args_.size() != 1)
+			throw new IllegalArgumentException("Rain constructor called with invalid arguments");
+
+		int ii = 0;
+		_type = RainType.valueOf(args_.get(ii++));
+
+		generateDots();
 	}
 }
